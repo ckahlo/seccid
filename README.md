@@ -13,7 +13,7 @@ The major change is the migration from NXPs UM11225 T1-over-I2C (T1oI2C) for SE0
 The goal was to provide a (previously missing?) USB CCID class driver for I2C secure elements in a well-known and widespread USB stack, not just another local show. So it becomes usable with a wide range of MCUs and could be ported and easily extended as needed. The USB CCID class driver is used by a minimal application to receive CCID XFER blocks and forward the contained APDUs over I2C to the secure element.\
 Scientists involved in our MAPHEUS experiments may use this code together with some commercial-off-the-shelf RP2040-based device, a custom SE051 breakout [based on this schematics from Michael Grand](https://github.com/mimok/se050-breakout) or a commerical product such as the [MIKROE SE051 PLUG&TRUST CLICK](https://www.mikroe.com/se051-plugtrust-click) or the [original NXP DevKits](https://nxp.com/SE051) together with I2C sensors and actors on the trusted I2C bus.\
 All in all seccid brings you secure embedded (sensor) networks as a smartcard interface to your laboratory desktop.\
-You can use it to simple configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the NXP PersoApplet.\
+You can use it to simply configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the NXP PersoApplet.\
 But you could just store keys in there for your wn applications.
 
 ## Motivation?
