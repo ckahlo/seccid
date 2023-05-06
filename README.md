@@ -14,11 +14,11 @@ The goal was to provide a (previously missing?) USB CCID class driver for I2C se
 Scientists involved in our MAPHEUS experiments may use this code together with some commercial-off-the-shelf RP2040-based device, a custom SE051 breakout [based on this schematics from Michael Grand](https://github.com/mimok/se050-breakout) or a commerical product such as the [MIKROE SE051 PLUG&TRUST CLICK](https://www.mikroe.com/se051-plugtrust-click) or the [original NXP DevKits](https://nxp.com/SE051) together with I2C sensors and actors on the trusted I2C bus.\
 All in all seccid brings you secure embedded (sensor) networks as a smartcard interface to your laboratory desktop.\
 You can use it to simply configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the NXP PersoApplet.\
-But you could just store keys in there for your wn applications.
+But you could just store keys in there for your own applications.
 
 ## Motivation?
 
-The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
+The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet, this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
 
 ## Exmaple usage
 
