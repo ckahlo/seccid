@@ -20,7 +20,7 @@ But you could just store keys in there for your own applications.
 
 The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet, this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
 
-## Exmaple usage
+## Example usage
 
 If you own a SE051C2 board with OEF ID A8FA (otherwise adjust the keys below accordingly) and e.g. a [SparkFun SerLCD](https://github.com/sparkfun/OpenLCD) you could wire them up as a chain and use [Martins really great GlobalPlatformPro](https://github.com/martinpaljak/GlobalPlatformPro) to send a secured command to the display:
 ```
