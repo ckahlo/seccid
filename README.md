@@ -5,7 +5,7 @@ The code builds upon [Adafruits Version of TinyUsb for Arduino](https://github.c
 
 ## Work in progress
 
-The current version is a re-write from scratch for debugging purposes and to onboard scientists and developers beginning with the [DLR MAPHEUS 13 campaign](https://sscspace.com/esrange/rocket-ballon-activities/) at ESRANGE Space Center.\
+The current version is a re-write from scratch for debugging purposes and to onboard scientists and developers beginning with the [DLR MAPHEUS](https://www.dlr.de/mp/en/desktopdefault.aspx/tabid-13266/23204_read-80521/) [13 campaign at ESRANGE Space Center](https://sscspace.com/esrange/rocket-ballon-activities/).\
 The major change is the migration from NXPs UM11225 T1-over-I2C (T1oI2C) for SE050 and SE051 towards GlobalPlatform APDU Transport over SPI/I2C v1.0 | GPC_SPE_172 - also referred to as *T=1'* . Control requests are different and will mostly not work at the moment, but will be fixed soon. As well there will be other (unexpected) bugs due to the different nature how transfers are encoded. However, the GPC_SPE_172 might be adopted by other GlobalPlatform-compliant manufacturers as well.
 
 ## What is this good for?
@@ -13,12 +13,12 @@ The major change is the migration from NXPs UM11225 T1-over-I2C (T1oI2C) for SE0
 The goal was to provide a (previously missing?) USB CCID class driver for I2C secure elements in a well-known and widespread USB stack, not just another local show. So it becomes usable with a wide range of MCUs and could be ported and easily extended as needed. The USB CCID class driver is used by a minimal application to receive CCID XFER blocks and forward the contained APDUs over I2C to the secure element.\
 Scientists involved in our MAPHEUS experiments may use this code together with some commercial-off-the-shelf RP2040-based device, a custom SE051 breakout [based on this schematics from Michael Grand](https://github.com/mimok/se050-breakout) or a commerical product such as the [MIKROE SE051 PLUG&TRUST CLICK](https://www.mikroe.com/se051-plugtrust-click) or the [original NXP DevKits](https://nxp.com/SE051) together with I2C sensors and actors on the trusted I2C bus.\
 All in all seccid brings you secure embedded (sensor) networks as a smartcard interface to your laboratory desktop.\
-You can use it to simple configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the PersoApplet.\
-But you could just store keys in there for your applications.\
+You can use it to simple configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the NXP PersoApplet.\
+But you could just store keys in there for your wn applications.
 
 ## Motivation?
 
-The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts aren't published yet this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
+The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
 
 ## Exmaple usage
 
