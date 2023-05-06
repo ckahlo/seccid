@@ -18,7 +18,7 @@ But you could just store keys in there for your applications.\
 
 ## Motivation?
 
-The experiment description of Exp.007/Blofeld gives an idea about the future challenge of security of sensor networks on space vehicles. While lot's of other parts aren't published yet this repository should help to gain a deeper understanding of and easier development with I2C secure elements.
+The [experiment description (in German and English in the same document) of Exp.007/Blofeld](blob/main/docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenge of security of sensor networks on space vehicles. While lot's of other parts aren't published yet this repository should help to gain a deeper understanding of and easier development with I2C secure elements.
 
 ## Exmaple usage
 
