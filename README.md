@@ -22,14 +22,17 @@ The [experiment description (in German and English in the same document) of Exp.
 
 ## Exmaple usage
 
-If you own a SE051C2 board with OEF ID A8FA (otherwise adjust the keys below accordingly) and e.g. a [SparkFun SerLCD](https://github.com/sparkfun/OpenLCD) you could wire them up as a chain and use [Martins really great GlobalPlatformPro](https://github.com/martinpaljak/GlobalPlatformPro) to send a secured command to the display:
+If you own a SE051C2 board with OEF ID A8FA (otherwise adjust the keys below accordingly) and e.g. a [SparkFun SerLCD](https://github.com/sparkfun/OpenLCD) you could wire them up as a chain and use [Martins really great GlobalPlatformPro](https://github.com/martinpaljak/GlobalPlatformPro) to send a secured command to the display:\
 ```
 java -jar gp.jar -r "DLR/CK TinyUSB CCID 0" -a FFFFC201 -a FFFFC000 -sdaid A0000003965453000000010300000000 --key-enc bfc2dbe1828e035d3e7fa36b902a05c6 --key-mac bef85bd7ba0497d628781ce47b188c96 --key-dek d873f316be297f2fc9c0e45f54710699 -d -s 80030030224120010002720103001348656C6C6F2053656375726520576F726C64210400020001
-```
+```\
+(An Adafruit QtPy RP2040, a NXP SE051 and a SparkFun SerLCD wired together displaying a hello-message on the LCD)[docs/QtPy2040-SE051-SerLCD.jpeg]
+
+
 
 ## License
 
-The default license for this project is the [GPL v3](LICENSE.md)
+The default license for this project is the [GPL v3](LICENSE)
 
 ## Thanks
 
