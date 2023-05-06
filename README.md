@@ -6,7 +6,7 @@ The code builds upon [Adafruits Version of TinyUsb for Arduino](https://github.c
 ## Work in progress
 
 The current version is a re-write from scratch for debugging purposes and to onboard scientists and developers beginning with the [DLR MAPHEUS 13 campaign](https://sscspace.com/esrange/rocket-ballon-activities/) at ESRANGE Space Center.\
-The major change is the migration from NXPs UM11225 T1-over-I2C (T1oI2C) for SE050 and SE051 towards GlobalPlatform APDU Transport over SPI/I2C v1.0 | GPC_SPE_172 - also referred to as "T=1'". Control requests are different and will mostly not work at the moment, but will be fixed soon. As well there will be other (unexpected) bugs due to the different nature how transfers are encoded. However, the GPC_SPE_172 might be adopted by other GlobalPlatform-compliant manufacturers as well.
+The major change is the migration from NXPs UM11225 T1-over-I2C (T1oI2C) for SE050 and SE051 towards GlobalPlatform APDU Transport over SPI/I2C v1.0 | GPC_SPE_172 - also referred to as *T=1'* . Control requests are different and will mostly not work at the moment, but will be fixed soon. As well there will be other (unexpected) bugs due to the different nature how transfers are encoded. However, the GPC_SPE_172 might be adopted by other GlobalPlatform-compliant manufacturers as well.
 
 ## What is this good for?
 
