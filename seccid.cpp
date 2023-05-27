@@ -31,6 +31,8 @@
 
 Adafruit_NeoPixel pixel(1, PIN_NEOPIXEL);
 
+const uint8_t detectAID[] = { 0xD2, 0x76, 0x00, 0x00, 0x93, 0xFE, 0x00, 0x42 };
+
 uint32_t callctr = 0;
 TwoWire *seBus = &Wire;
 uint8_t seAddr = 0x48;
@@ -68,7 +70,22 @@ uint32_t process(uint8_t *buf, uint32_t len) {
 		}
 	}
 
-	if (CLAINS == 0xFFFF) { // reserved class/instruction pair
+	if (CLAINS == 0x00A4 && P1P2 == 0x0400 && len > 5 && buf[4] == sizeof(detectAID) && memcmp(detectAID, &buf[4], sizeof(detectAID))) { // SELECT check for detection
+		buf[y++] = 0x61;
+		buf[y++] = 0x0A;
+		buf[y++] = 0x4F;
+		buf[y++] = 0x08;
+		buf[y++] = 0xD2;
+		buf[y++] = 0x76;
+		buf[y++] = 0x00;
+		buf[y++] = 0x00;
+		buf[y++] = 0x93;
+		buf[y++] = 0xFE;
+		buf[y++] = 0x00;
+		buf[y++] = 0x42;
+
+		SW1SW2 = 0x9000;
+	} else if (CLAINS == 0xFFFF) { // reserved class/instruction pair
 		switch (P1P2 & 0xFF00) { // channel commands
 		case 0xC000: { // get ping and current setting
 			pixel.fill(pixel.Color(0, 255, 0), 0, 1);
@@ -100,12 +117,16 @@ uint32_t process(uint8_t *buf, uint32_t len) {
 				se1 = new seccid::GPI2C(&bus);
 				se1->begin();
 
-				// some Arduino stacks support only 32 byte I2C buffers
-				apdu[0] = 0x20; // 32 byte IFS
-				n = se1->I2CTX(0xC1, apdu, 1, 1);
-				Serial.printf("SE: %4.4X\n", n);
 
 				n = se1->I2CTX(0xCF, apdu, 0, le); // soft reset
+				Serial.printf("SE: %4.4X: ", n);
+				printHex(Serial, apdu, n);
+				Serial.println();
+
+				// XXX: some Arduino stacks support only 32 byte I2C buffers
+				//apdu[0] = 0x20; // 32 byte IFS
+				apdu[0] = 0x80; // 128 byte IFS
+				n = se1->I2CTX(0xC1, apdu, 1, 1);
 				Serial.printf("SE: %4.4X\n", n);
 
 				SW1SW2 = 0x9000;
@@ -165,9 +186,11 @@ uint32_t callSE(uint8_t *buf, uint32_t len) {
 		uint32_t lc = (len > 4) ? buf[4] : 0, le = (len > 4) ? buf[5 + lc] : 0; // last byte of command
 
 		//uint32_t n = se1->T1TX(buf, len, le + 2); // add status word
-		uint32_t n = se1->T1TX(buf, len, le + 2); // add status word
+		uint32_t n = se1->T1TX(buf, 5 + lc, le + 2); // add status word
 
-		Serial.printf("> %4.4X, %4.4X, %4.4X\n", lc, le, n);
+		Serial.printf("> %4.4X, %4.4X, %4.4X: ", lc, le, n);
+		printHex(Serial, buf, n);
+		Serial.println();
 
 		return n;
 	} else {

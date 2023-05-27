@@ -121,6 +121,41 @@ uint32_t GPI2C::I2CTX(uint8_t pcb, uint8_t *buf, uint32_t lc, uint32_t le) {
 		le = RDI2C(&t1frame[0], 4);
 		// TODO: CHECK [0] NAD = 0x12 & PCB chain/number
 		pcb = t1frame[1], le = (t1frame[2] << 8) | t1frame[3];
+
+		Serial.printf("I2TX-R: %2.2X, %2.2X %4.4X\n", t1frame[0], pcb, le);
+
+//		if (!(pcb & 0x80)) { // ... data
+//			if (buf != NULL)
+//				le = RDI2C(&buf[0], le + 2); // +CRC? (+SW1SW2?)
+//
+//			// XXX: check CRC and request re-transmit if failed
+//
+//			if (pcb & 0x40) { // ... more data, acknowledge
+//				t1frame[0] = nad;
+//				t1frame[1] = (!(pcb & (1 << 6))) << 6;
+//				t1frame[2] = t1frame[3] = 0;
+//				uint16_t crc = ~CCITTCRC16(&t1frame[0], 4 + lc, ~0);
+//				t1frame[4 + 0 + 0] = crc >> 8;
+//				t1frame[4 + 0 + 1] = crc;
+//				if (WRI2C(&t1frame[0], 4 + lc + 2) == 0) {
+//					le = RDI2C(&t1frame[0], 4);
+//					// TODO: CHECK [0] NAD = 0x12 & PCB chain/number
+//					pcb = t1frame[1], le = (t1frame[2] << 8) | t1frame[3];
+//
+//					Serial.printf("I2TX-R2: %2.2X, %2.2X %4.4X", t1frame[0], pcb, le);
+//
+//					if (!(pcb & 0x80)) { // ... data
+//						if (buf != NULL)
+//							le = RDI2C(&buf[0], le + 2); // +CRC? (+SW1SW2?)
+//					}
+//
+//				}
+//			}
+//		} else { // control code or error
+//
+//		}
+
+
 		if (buf != NULL)
 			le = RDI2C(&buf[0], le + 2); // +CRC? (+SW1SW2?)
 

@@ -21,6 +21,7 @@
  *
  */
 
+#include "Arduino.h" // required for millis()
 #include "ccid.h"
 #include "seccid.h"
 
@@ -35,11 +36,12 @@ uint8_t const* tud_descriptor_device_qualifier_cb() { // Adafruit lacks device q
 extern "C" void setup() {
 	TinyUSBDevice.setManufacturerDescriptor("DLR/CK");
 	TinyUSBDevice.setProductDescriptor("Exp.007 SECCID");
-	//TinyUSBDevice.setID(USB_VID, USB_PID);
+	TinyUSBDevice.setID(USB_VID, USB_PID);
 	TinyUSBDevice.setDeviceVersion(USB_DEV);
 
 	ccid.begin();
-	while (!Serial) { // wait for enumeration to be completed
+	bool usbConnected = (*(uint32_t*) (0x50110000 + 0x50)) & (1 << 16);
+	while (usbConnected && !Serial && millis() < 1000) {
 	}
 	Serial.println("DLR/CK Exp.007 SECCID booted.\n");
 	Serial.flush();

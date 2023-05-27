@@ -26,8 +26,9 @@
 
 #include <stdint.h>
 
-//#define USB_VID 0x1209
-//#define USB_PID 0xyyyy
+// https://github.com/pidcodes/pidcodes.github.com/blob/master/1209/E007/index.md
+#define USB_VID 0x1209
+#define USB_PID 0xE007
 #define USB_DEV 0x0100
 
 uint32_t process(uint8_t*, uint32_t);
