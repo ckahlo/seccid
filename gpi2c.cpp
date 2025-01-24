@@ -1,6 +1,6 @@
 /*
  * This file is part of the SECCID distribution (https://github.com/ckahlo/seccid).
- * Copyright (c) 2023 Christian Kahlo.
+ * Copyright (c) 2023 - 2025 Christian Kahlo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 /*
  * This file is part of the SECCID distribution (https://github.com/ckahlo/seccid).
- * Copyright (c) 2023 Christian Kahlo.
+ * Copyright (c) 2023 - 2025 Christian Kahlo.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,8 @@
 
 #define CFG_TUD_CCID_EP_BUFSIZE	(TUD_OPT_HIGH_SPEED ? 512 : 64)
 
-#define CFG_TUD_CCID_RX_BUFSIZE	128
-#define CFG_TUD_CCID_TX_BUFSIZE	128
-
-// Starting endpoints; adjusted elsewhere as needed
-#define CCID_EPOUT				(0x00)
-#define CCID_EPIN				(0x80)
+#define CFG_TUD_CCID_RX_BUFSIZE	(256)
+#define CFG_TUD_CCID_TX_BUFSIZE	(256)
 
 #define CCID_HDR_SZ				(10) // CCID message header size
 #define CCID_DESC_SZ			(54) // CCID function descriptor size
@@ -108,7 +104,10 @@ public:
 	static uint8_t getInstanceCount(void);
 	void end(void);
 
-	uint32_t run(uint32_t (*cb)(uint8_t*, uint32_t));
+	typedef uint32_t (*apdu_callback_t)(uint8_t*, uint32_t);
+	apdu_callback_t set_apdu_callback(apdu_callback_t);
+
+	void process();
 
 private:
 	enum {
@@ -117,11 +116,12 @@ private:
 	static uint8_t _instance_count;
 
 	uint8_t _instance = INVALID_INSTANCE;
-	uint8_t _itf_num = 0;
 
 	bool isValid(void) {
 		return _instance != INVALID_INSTANCE;
 	}
+
+	apdu_callback_t cb;
 };
 
 #endif

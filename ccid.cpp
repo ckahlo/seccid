@@ -1,6 +1,6 @@
 /*
  * This file is part of the SECCID distribution (https://github.com/ckahlo/seccid).
- * Copyright (c) 2023 Christian Kahlo.
+ * Copyright (c) 2023 - 2025 Christian Kahlo.
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 #define TINYUSB_API_VERSION 0
 #endif
 
+SECCID_USBD_CCID *devices[CFG_TUD_CCID] = { NULL, };
+
 typedef struct {
 	uint8_t itf_num;
 	uint8_t ep_in;
@@ -36,6 +38,9 @@ typedef struct {
 	tu_fifo_t tx_ff;
 	uint8_t rx_ff_buf[CFG_TUD_CCID_RX_BUFSIZE];
 	uint8_t tx_ff_buf[CFG_TUD_CCID_TX_BUFSIZE];
+
+	OSAL_MUTEX_DEF(rx_ff_mutex);
+	OSAL_MUTEX_DEF(tx_ff_mutex);
 
 	CFG_TUSB_MEM_ALIGN uint8_t epout_buf[CFG_TUD_CCID_EP_BUFSIZE];
 	CFG_TUSB_MEM_ALIGN uint8_t epin_buf[CFG_TUD_CCID_EP_BUFSIZE];
@@ -55,12 +60,19 @@ uint8_t SECCID_USBD_CCID::getInstanceCount(void) {
 
 SECCID_USBD_CCID::SECCID_USBD_CCID(void) {
 	_instance = INVALID_INSTANCE;
-	setStringDescriptor("TinyUSB CCID");
 }
 
-uint16_t SECCID_USBD_CCID::getInterfaceDescriptor(uint8_t itfnum, uint8_t *buf, uint16_t bufsize) {
-	_itf_num = itfnum;
-	uint8_t desc[] = { TUD_CCID_DESCRIPTOR(itfnum, 0, CCID_EPOUT, CCID_EPIN, CFG_TUD_CCID_EP_BUFSIZE) };
+uint16_t SECCID_USBD_CCID::getInterfaceDescriptor(uint8_t itfnum_deprecated, uint8_t *buf, uint16_t bufsize) {
+	uint8_t itfnum = 0, strid = 0, ep_in = 0, ep_out = 0;
+	(void) itfnum_deprecated;
+
+	if (buf) { // null buffer is used to get the length of descriptor only
+		itfnum = TinyUSBDevice.allocInterface(1);
+		ep_in = TinyUSBDevice.allocEndpoint(TUSB_DIR_IN);
+		ep_out = TinyUSBDevice.allocEndpoint(TUSB_DIR_OUT);
+	}
+
+	uint8_t desc[] = { TUD_CCID_DESCRIPTOR(itfnum, _strid, ep_out, ep_in, CFG_TUD_CCID_EP_BUFSIZE) };
 	uint16_t const len = sizeof(desc);
 
 	if (buf) {
@@ -81,10 +93,13 @@ bool SECCID_USBD_CCID::begin() {
 		return false;	// too many instances
 	}
 
+	this->setStringDescriptor("TinyUSB CCID");
 	if (!TinyUSBDevice.addInterface(*this))
 		return false;
 
 	_instance = _instance_count++;
+	devices[_instance] = this;
+
 	return true;
 }
 
@@ -153,17 +168,46 @@ uint32_t tud_ccid_n_write(uint8_t itf, void *buffer, uint32_t bufsize) {
 //--------------------------------------------------------------------+
 // USBD Driver API
 //--------------------------------------------------------------------+
-static void ccid_init(void) {
+void ccid_init(void) {
 	tu_memclr(&_ccidd_itf, sizeof(_ccidd_itf));
 
 	for (uint8_t i = 0; i < CFG_TUD_CCID; i++) {
 		ccidd_interface_t *p_itf = &_ccidd_itf[i];
 		tu_fifo_config(&p_itf->rx_ff, p_itf->rx_ff_buf, CFG_TUD_CCID_RX_BUFSIZE, 1, false);
 		tu_fifo_config(&p_itf->tx_ff, p_itf->tx_ff_buf, CFG_TUD_CCID_TX_BUFSIZE, 1, false);
+
+#if OSAL_MUTEX_REQUIRED
+		osal_mutex_t mutex_rd = osal_mutex_create(&p_itf->rx_ff_mutex);
+		osal_mutex_t mutex_wr = osal_mutex_create(&p_itf->tx_ff_mutex);
+		TU_ASSERT(mutex_rd != NULL && mutex_wr != NULL,);
+
+		tu_fifo_config_mutex(&p_itf->rx_ff, NULL, mutex_rd);
+		tu_fifo_config_mutex(&p_itf->tx_ff, mutex_wr, NULL);
+#endif
 	}
 }
 
-static void ccid_reset(uint8_t rhport) {
+bool ccid_deinit(void) {
+#if OSAL_MUTEX_REQUIRED
+	for (uint8_t i = 0; i < CFG_TUD_CDC; i++) {
+		ccidd_interface_t *p_itf = &_ccidd_itf[i];
+
+		if (p_itf->rx_ff.mutex_rd) {
+			osal_mutex_delete(p_itf->rx_ff.mutex_rd);
+			tu_fifo_config_mutex(&p_itf->rx_ff, NULL, NULL);
+		}
+
+		if (p_itf->tx_ff.mutex_wr) {
+			osal_mutex_delete(p_itf->tx_ff.mutex_wr);
+			tu_fifo_config_mutex(&p_itf->tx_ff, NULL, NULL);
+		}
+	}
+#endif
+
+	return true;
+}
+
+void ccid_reset(uint8_t rhport) {
 	(void) rhport;
 
 	for (uint8_t i = 0; i < CFG_TUD_CCID; i++) {
@@ -174,15 +218,13 @@ static void ccid_reset(uint8_t rhport) {
 	}
 }
 
-static uint16_t ccid_open(uint8_t rhport, tusb_desc_interface_t const *desc_itf, uint16_t max_len) {
-	if (desc_itf->bInterfaceClass != TUSB_CLASS_SMART_CARD)
-		return 0; // not our interface class
+uint16_t ccid_open(uint8_t rhport, tusb_desc_interface_t const *itf_desc, uint16_t max_len) {
+	TU_VERIFY(TUSB_CLASS_SMART_CARD == itf_desc->bInterfaceClass, 0); // not our interface class
 
-	// desc_intf->bInterfaceSubClass == 0 && desc_intf->bInterfaceProtocol == 0
 	uint16_t drv_len = sizeof(tusb_desc_interface_t);
 	TU_VERIFY(max_len >= drv_len, 0);
 
-	uint8_t const *p_desc = (uint8_t const*) desc_itf;
+	uint8_t const *p_desc = (uint8_t const*) itf_desc;
 
 	//------------- CCID descriptor -------------//
 	p_desc = tu_desc_next(p_desc);
@@ -198,12 +240,12 @@ static uint16_t ccid_open(uint8_t rhport, tusb_desc_interface_t const *desc_itf,
 	}
 	TU_ASSERT(p_itf);
 
-	p_itf->itf_num = desc_itf->bInterfaceNumber;
+	p_itf->itf_num = itf_desc->bInterfaceNumber;
 	(void) p_itf->itf_num;
 
 	//------------- Endpoint Descriptor -------------//
 	p_desc = tu_desc_next(p_desc);
-	uint8_t numEp = desc_itf->bNumEndpoints;
+	uint8_t numEp = itf_desc->bNumEndpoints;
 	TU_ASSERT(usbd_open_edpt_pair(rhport, p_desc, numEp, TUSB_XFER_BULK, &p_itf->ep_out, &p_itf->ep_in), 0);
 	drv_len += numEp * sizeof(tusb_desc_endpoint_t);
 
@@ -218,11 +260,11 @@ static uint16_t ccid_open(uint8_t rhport, tusb_desc_interface_t const *desc_itf,
 	return drv_len;
 }
 
-static bool ccid_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request) {
+bool ccid_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_request_t const *request) {
 	return false; // no control transfers supported
 }
 
-static bool ccid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes) {
+bool ccid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, uint32_t xferred_bytes) {
 	(void) rhport;
 	(void) result;
 
@@ -255,11 +297,11 @@ static bool ccid_xfer_cb(uint8_t rhport, uint8_t ep_addr, xfer_result_t result, 
 
 // static void ccid_sof(uint8_t rhport, uint32_t frame_count) { }// optional
 
-static usbd_class_driver_t const _ccid_driver = {
-#if CFG_TUSB_DEBUG >= 2
+usbd_class_driver_t const _ccid_driver = {
+//
 		.name = "CCID", //
-#endif
 		.init = ccid_init, //
+		.deinit = ccid_deinit, //
 		.reset = ccid_reset, //
 		.open = ccid_open, //
 		.control_xfer_cb = ccid_control_xfer_cb, //
@@ -267,8 +309,14 @@ static usbd_class_driver_t const _ccid_driver = {
 		.sof = NULL };
 
 usbd_class_driver_t const* usbd_app_driver_get_cb(uint8_t *driver_count) { // callback to add application driver
-	*driver_count = 1;
+	++*driver_count;
 	return &_ccid_driver;
+}
+
+SECCID_USBD_CCID::apdu_callback_t SECCID_USBD_CCID::set_apdu_callback(SECCID_USBD_CCID::apdu_callback_t new_cb) {
+	apdu_callback_t old_cb = cb;
+	cb = new_cb;
+	return old_cb;
 }
 
 /**
@@ -278,15 +326,14 @@ usbd_class_driver_t const* usbd_app_driver_get_cb(uint8_t *driver_count) { // ca
 
 uint8_t ccid_in[CCID_MSGLEN];
 
-uint32_t SECCID_USBD_CCID::run(uint32_t (*cb)(uint8_t*, uint32_t)) {
-	const uint8_t itf = _instance;
+void _process(const uint8_t itf, SECCID_USBD_CCID::apdu_callback_t cb) {
 	const ccidd_interface_t *ccid = &_ccidd_itf[itf];
 
 	uint8_t *rdBuf = ccid_in;
 	uint32_t rdLen = tud_ccid_n_read(itf, rdBuf, sizeof(ccid_in));
 
 	while (rdLen) {
-		while (rdLen < CCID_HDR_SZ) {
+		while (rdLen < CCID_HDR_SZ /* || message length / max ccid_in length */) {
 			rdLen += tud_ccid_n_read(itf, &rdBuf[rdLen], sizeof(ccid_in) - rdLen);
 		}
 
@@ -351,6 +398,11 @@ uint32_t SECCID_USBD_CCID::run(uint32_t (*cb)(uint8_t*, uint32_t)) {
 		}
 	}
 
-	return 0;
+	return;
+}
+
+void SECCID_USBD_CCID::process() {
+	const uint8_t itf = _instance;
+	_process(itf, cb);
 }
 

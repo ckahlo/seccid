@@ -1,7 +1,13 @@
 # Welcome to seccid - the secure element CCID connector
 
-This is a secure element CCID library / Arduino application spin-off from the DLR Exp.007/Blofeld experiment.\
+This is a [secure element CCID library](https://github.com/ckahlo/seccid) / Arduino application spin-off from the DLR Exp.007 / Blofeld experiment.\
 The code builds upon [Adafruits Version of TinyUsb for Arduino](https://github.com/adafruit/Adafruit_TinyUSB_Arduino), but could also run with [the original pure TinyUSB](https://github.com/hathach/tinyusb) as well.
+
+## Updates
+### 2025-01-23:
+- updated CCID driver for compatibility with Adafruit_TinyUSB 2.4.0+, tested up to 3.4.2
+- removed the CCID interface run() method from main loop and added new callback behaviour
+- added explicit USB serialnumber, containing chip type, chip version, ROM version, flash ID
 
 ## Work in progress
 
@@ -16,9 +22,9 @@ All in all seccid brings you secure embedded (sensor) networks as a smartcard in
 You can use it to simply configure the secure element over PCSC and USB CCID using the NXP SEMS Lite toolchain and the NXP PersoApplet.\
 But you could just store keys in there for your own applications.
 
-## Motivation?
+## Motivation? More about Exp.007.
 
-The [experiment description (in German and English in the same document) of Exp.007/Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet, this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
+The experiment description (German and English in the same document) of [Exp.007 / Blofeld](docs/Exp007_Blofled%20MP12%20Experiment%20Description%20de_en.pdf) gives an idea about the future challenges of security of sensor networks on space vehicles. While lot's of the other parts running on [Pauls lockable Teensy 4.x boards starring the NXP RT1062](https://github.com/PaulStoffregen/cores) or [Andreas and Andrejs powerful USBArmory](https://github.com/usbarmory/usbarmory) aren't published yet, this repository should help to gain a deeper understanding of and easier development with I2C secure elements for secure embedded sensor networks.
 
 ## Example usage
 
@@ -33,7 +39,7 @@ java -jar gp.jar -r "DLR/CK TinyUSB CCID 0" -a FFFFC201 -a FFFFC000 -sdaid A0000
 
 ## License
 
-The default license for this project is the [GPL v3](LICENSE)
+The default license for [this project](https://github.com/ckahlo/seccid) is the [GPL v3](LICENSE)
 
 ## Thanks
 
